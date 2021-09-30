@@ -10,7 +10,7 @@ import sys
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
-from models.cnn_model import ConvNet
+from cnn_model import ConvNet
 import json
 import argparse
 from functions import find_pos

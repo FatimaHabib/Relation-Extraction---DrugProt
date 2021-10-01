@@ -68,12 +68,10 @@ if __name__ == '__main__':
         # preprocessing step 1: build vocabulary
         VOCAB_SIZE = args.vocab_size
 
-        #fasttext = KeyedVectors.load_word2vec_format(args.file_word2vec, limit=VOCAB_SIZE)
         fasttext = KeyedVectors.load_word2vec_format(args.file_word2vec, limit=VOCAB_SIZE, binary = True)
 
         word2vec = {}
 
-        # for LRP (first layer) we need a lower and an upper bound
         lower_bound = float('inf')
         upper_bound = float('-inf')
 
@@ -83,7 +81,6 @@ if __name__ == '__main__':
         for word in fasttext.key_to_index:
             word2vec[word] = np.reshape(fasttext[word], (1, -1))
 
-            # for lrp (first layer) determine lower and upper bounds
             min_coeff = np.min(word2vec[word])
             max_coeff = np.max(word2vec[word])
             lower_bound = min_coeff if min_coeff < lower_bound else lower_bound

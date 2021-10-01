@@ -116,7 +116,8 @@ if __name__ == '__main__':
         cfg['preprocessing']['word_vectors']['vocab'] = path
 
         # serialize the vocabulary and document the lower and upper bound in the name of the file
-        pickle.dump(word2vec, open(path, 'wb'))
+        
+        pickle.dump(word2vec, open(path, 'wb')) #path to your vocabulary file is included in config.json
 
         log('Updated config.json')
         with open('config.json', 'w') as fin:

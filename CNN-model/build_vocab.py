@@ -37,24 +37,7 @@ def log(msg):
     now = datetime.datetime.now()
     print(str(now) + ' ' + msg)
     sys.stdout.flush()
-"""SEED = 1768
 
-random.seed(SEED)
-np.random.seed(SEED)
-torch.manual_seed(SEED)
-torch.backends.cudnn.deterministic = True
-
-TEXT = torchtext.legacy.data.Field(tokenize = 'spacy', batch_first = True)
-LABEL = torchtext.legacy.data.LabelField(dtype = torch.float)
-nlp = spacy.load('en')#en-core-sci-sm
-#load pretrained embedding 
-loaded_vectors = torchtext.vocab.Vectors('lrp_lrv_lz-main/data/embeddings_biowordvec/BioWordVec_PubMed_MIMICIII_d200.vec.bin')
-train_data = "drugprot-gs-training-development/training/drugprot_training_abstracts.tsv"
-MAX_VOCAB_SIZE = 25000
-TEXT.build_vocab(train_data, 
-                 max_size = MAX_VOCAB_SIZE, 
-                 vectors = loaded_vectors, 
-                 unk_init = torch.Tensor.normal_)"""
 
 if __name__ == '__main__':
     log('Preprocessing...')
@@ -71,7 +54,6 @@ if __name__ == '__main__':
     parser.add_argument('--preprocess_pubmed', type=bool, default=cfg['preprocessing']['pubmed']['doit'])
     parser.add_argument('--file_train_text', type=str, default=cfg['preprocessing']['pubmed']['file_train_text'])
     parser.add_argument('--file_dev_text', type=str, default=cfg['preprocessing']['pubmed']['file_dev_text'])
-    #parser.add_argument('--file_test_text', type=str, default=cfg['preprocessing']['pubmed']['file_test_text'])
     parser.add_argument('--to_lower', type=bool, default=cfg['preprocessing']['pubmed']['to_lower'])
     parser.add_argument('--language_model', type=str, default=cfg['preprocessing']['pubmed']['language_model'])
 

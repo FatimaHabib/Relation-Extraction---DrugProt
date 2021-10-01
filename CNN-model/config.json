@@ -1,0 +1,22 @@
+{
+  "preprocessing": {
+    "word_vectors": {
+      "doit": true,
+      "file_word2vec": "lrp_lrv_lz-main/data/embeddings_biowordvec/BioWordVec_PubMed_MIMICIII_d200.vec.bin",
+      "dir_vocab": "data/",
+      "vocab_size": 2324849,
+      "lower_bound": -11.038,
+      "upper_bound": 8.9537,
+      "vocab": "data/vocab_size_2324849_min_-11.038_max_8.9537.p"
+    },
+    "pubmed": {
+      "doit": true,
+      "to_lower": false,
+      "file_train_text": "code_Re_shared_task/data/DrugProt/training/data_all_samples.csv",
+      "file_dev_text": "drugprot-gs-training-development/development/drugprot_development_abstracs.tsv",
+      "language_model": "en_core_sci_sm",
+      "file_train_pickle": "train.p",
+      "file_dev_pickle": "dev.p"
+    }
+  }
+}

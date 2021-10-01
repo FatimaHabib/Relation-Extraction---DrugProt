@@ -12,8 +12,8 @@
     "pubmed": {
       "doit": true,
       "to_lower": false,
-      "file_train_text": "code_Re_shared_task/data/DrugProt/training/data_all_samples.csv",
-      "file_dev_text": "drugprot-gs-training-development/development/drugprot_development_abstracs.tsv",
+      "file_train_text": "training.csv",
+      "file_dev_text": "dev.csv",
       "language_model": "en_core_sci_sm",
       "file_train_pickle": "train.p",
       "file_dev_pickle": "dev.p"

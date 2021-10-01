@@ -17,7 +17,7 @@ To train the models:
           
 2.SciBERT+CNN and SciBERT+LSTM+CNN:
                    
-   python3 train.py 16 50 no_cv 0.00002 
+          python3 train.py 16 50 no_cv 0.00002 
    
    batch size, number of epochs, training with or withot cross validation set to Y_CV if you want to train it with CV, learning rat
    

@@ -17,13 +17,10 @@ else:
     device = torch.device("cpu")
 ####hyper parameters#########
 
-#this value detect which preproccessed data to use, for now there are 4 depending on the representation of position vectors associated with sentences where there are no entities or at most one entity exist, it takes 4 values z_vec, inc_vec, dec_vec, const_vec (len of the sentence+1)
-p_v_rep = sys.argv[1] 
-p_v_pad = sys.argv[2]#z_vec const_vec
-p_v_normalize = sys.argv[3] #norm or w_norm 
-sent_pad = sys.argv[4] #sentence padding z_sent (with vectors of zeros) , const_sent (len sentence +1 )  with vectors of (high numbers) , with vectors of (sympols) 
+#this value detect which preproccessed data to use,  2 values z_vec, inc_vec, dec_vec, const_vec (len of the sentence+1)
+p_v_pad = sys.argv[2]#z_vec, const_vec
+sent_pad = sys.argv[4] #sentence padding z_sent (with vectors of zeros) , const_sent (len sentence +1 )  with vectors of (high numbers)
 ###############################""
-##position vectors where no entity exist
 
 
 
@@ -41,7 +38,8 @@ class LabelToOneHot:
         return idx # this is only a scalar, which is handled by the framework (code review)
 
 def E(sent,label2vec):
-        """Returns an embedding matrix of the graph's nodes."""
+	
+	## This function return the sentence embedding , which a matrix of size (number of tokens * embedding size)
         assert('<###-unk-###>') in label2vec, 'The unknown token cannot be found.'
       
         tokenized_sent = word_tokenize(str(sent))
@@ -62,6 +60,7 @@ def E(sent,label2vec):
             else:
                 res = label2vec['<###-unk-###>']
             return res
+
 ###convert inputs into samples 
 class SentSample:
     def __init__(self, embedding, d1,d2,e1_embed,e2_embed, label=None):
@@ -81,26 +80,19 @@ class SentSample:
         
 ###normalize psition vectors (d1,d2)
 ### The house is big : lets suppose that the entity is house d1 =[-1,0,1,2] the distence between each word in th esentence and the entity "house"
-def normalize_pos(pos_vector):
-    norm_pos_vector = []
-    max_x = max(pos_vector)
-    min_x = min(pos_vector)
-    for ele in pos_vector:
-        norm = (int(ele) -min_x)/((max_x - min_x)+0.00001)
-        norm_pos_vector.append(norm)
-    return norm_pos_vector
     
 #######################
 class LabelToOneHot:
+    ##Convert the relations into numerical values
     def __init__(self, classes):
+	
         self.classes = classes
-        #print(self.classes)
     def label_to_one_hot(self, label):
         if label not in self.classes:
            # print(label)
             raise KeyError
         idx = self.classes.index(label)
-        return idx # this is only a scalar, which is handled by the framework (code review)
+        return idx
 
 ##############Dataset class
 class DrugProtDataset(Dataset):
@@ -130,19 +122,19 @@ class DrugProtDataset(Dataset):
     
     def __len__(self):
         return len(self.df)
-        
+    
+    
     def PAD_Po_Vectors(self,d1,d2,p_v_pad): #p_v_pad extra argument for padding position vector 
-    #"This function pad the possition vectors" 
+    #This function pad the possition vectors with: zeros if p_v_pad == z_vec, with constant number if  p_v_pad == const_vec.
+    # If the length of the position vector > 200 (the embedding size) the function delete the extra elements from the vector to keep the size of 200.
         new_d1 =[]
         new_d2=[]
         if len(d1) ==200:
-            #print("Yes PAD_pO 200")
             new_d1 = d1
             new_d2 = d2
+		
         elif len(d1) <200:#pad with zeorss
-           # print("No PAD_ <200")
-           # print("p_v_pad and p_v_pad type",p_v_pad,str(p_v_pad)=="const_vec",type(p_v_pad))
-           # print(p_v_stored)
+          
             if str(p_v_pad) == "z_vec":
                 new_d1 = d1+ [0] * (200 - len(d1))
                 new_d2 = d2+ [0] * (200 - len(d2))
@@ -154,7 +146,6 @@ class DrugProtDataset(Dataset):
             #print(">200")
             new_d1 = d1[:200]
             new_d2 = d2[:200]
-        #print("The lenght of the postitions vectors: ",len(d1),len(d2))
         return new_d1,new_d2
         
         
@@ -169,33 +160,29 @@ class DrugProtDataset(Dataset):
         d2 = find_pos(sent,d2,p_v_rep)
         entity1 = self.e1[index]
         entity2 = self.e2[index]
-        # normalize the position vectors
-        if str(p_v_normalize) == "norm":
-           d1 = normalize_pos(d1)
-           d2 = normalize_pos(d2)
-             
-        
-        ##use different embeddings with higher than 200
+        relation = self.relation[index]
+
         ##padding position vectors
         
         new_d1, new_d2  = self.PAD_Po_Vectors(d1, d2,p_v_pad)
-        relation = self.relation[index]
-        ###Embeddings: convert words into normalized version
 
-        ## #convert relation to one hot vector
+        #convert relation to one hot vector
         label = self.label2onehot.label_to_one_hot(relation)
         
         ##################
-        sent_embed = E (sent, self.label2vec) #return the sentence embedding 
-        #print("type of entity1", type(entity1))
-        #print("type pf entity 2 ",type(entity2))
-        e1_embed =  E(entity1,self.label2vec)
-        e2_embed =  E(entity2,self.label2vec)
+        sent_embed = E (sent, self.label2vec) #return the sentence embedding which is a concatination of its tokens embadding.
+       
+        e1_embed =  E(entity1,self.label2vec) # entity1 embedding
+        e2_embed =  E(entity2,self.label2vec) # entity2 embedding
+        
+	##convert the entities embedding vectors and positions vectors into numpy array to be able to concatinate them on the y-axis
         arr1 = np.array(e1_embed)
         arr2 = np.array(e2_embed)
         arr3 = np.array([new_d1])
         arr4 = np.array([new_d2])
-       
+        
+	
+	## Concatenation of embeddings on the y-axis
         concats = np.concatenate((sent_embed,arr1,arr2),axis=0)
    
         concats = np.concatenate ((concats,arr3,arr4),axis=0)
@@ -208,15 +195,19 @@ class DrugProtDataset(Dataset):
                    concats = np.pad(concats,((0,300-len(concats)),(0,0)),constant_values = 10000,mode ='constant')# add vectors which contains the value len(sentence) +1  at the end of the
                    
                    
-
+        #convert numby array into tensor array
         to_tensor_concat = torch.from_numpy(concats).float() 
      
-        return {"to_tensor_concat":to_tensor_concat,
-                "label":label,
-                 "arg1":arg1,
-                 "arg2":arg2,
-                 "abs_id":abs_id,
-                 "sent":sent}#######################################################
+        return {"to_tensor_concat":to_tensor_concat, #sentence embeddings 
+                "label":label, # actual  relation 
+                 "arg1":arg1,  # interactor argument (entity1 identifier) 
+                 "arg2":arg2,   # interactor argument (entity2 identifier) 
+                 "abs_id":abs_id, #abstract id
+                 "sent":sent} # sentence text
+
+
+
+####Data loader 
 def loader(path_train_file: str,
 
            path_test_file: str,
@@ -258,16 +249,18 @@ if __name__ == "__main__":
   
 
     model = ConvNet()
+    #move model to the device
     model.to(device)
-	# Loss and optimizer
+    # Loss and optimizer
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 		
 
 ##########################################Load the data
-
-    path_word2vec = "../data/vocab_size_2324849_min_-11.038_max_8.9537.p" ##vocabulary
-    root = "data/DrugProt/"
+  
+    ##LInk to the vocabulary folder
+    path_word2vec = "/data/vocab_size_2324849_min_-11.038_max_8.9537.p" 
+    root = "data/"
     training = root+ "training.csv"
     testing = root+"testing.csv"
 
@@ -414,8 +407,8 @@ if __name__ == "__main__":
         labels_list = torch.stack(labels_list).cpu()
         
         print("Done predicting" )  
-        print(outputs_list)
-        print(ids)
+	
+	#Save the predictions
         data_ = {'id':[id_.item() for id_ in ids],"sent":sent_texts,'y_pred':[pred.item() for pred in outputs_list],"arg1":args1_list,"arg2":args2_list,'real_values':[real.item() for real in labels_list]}
         df = pd.DataFrame(data=data_)
         df.to_csv("predictions_CNN.csv",index=False)

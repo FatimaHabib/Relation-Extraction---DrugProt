@@ -19,5 +19,5 @@ To train the models:
                    
           python3 train.py 16 50 no_cv 0.00002 
    
-   Parameters are: batch size, number of epochs, training with or without cross validation set to Y_CV if you want to train it with CV, learning rat
+   Parameters are: batch size, number of epochs, training with or without cross validation(CV) set to Y_CV if you want to train it with CV, learning rate.
    
